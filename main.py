@@ -15,3 +15,8 @@ product = [
 @app.get('/products')
 def get_products():
     return product
+
+#dynamic routing
+@app.get('/product/{id}')
+def get_product(id: int):
+    return product[id-1]
