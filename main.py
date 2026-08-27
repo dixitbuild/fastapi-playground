@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from models import Products
 
 app = FastAPI()
 
@@ -6,8 +7,10 @@ app = FastAPI()
 def greet():
     return "welcome to Fast API"
 
-
-@app.get('/product')
-def product():
-    return "welcome to Fast API Products"
-
+product = [
+    Products(1, 'phone', 'keypad', 1200, 3),
+    Products(2, 'phone', 'smart', 12000, 31)
+]
+@app.get('/products')
+def get_products():
+    return product
