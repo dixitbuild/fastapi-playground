@@ -27,3 +27,22 @@ def get_product(id: int):
 def get_product(product: Products):
     products.append(product)
     return product
+
+#post method
+@app.put('/product')
+def update_product(id:int, product: Products):
+    for p_index in range(len(products)):
+        if products[p_index].id==id:
+            products[p_index]=product
+            return "Added successfully"
+    return "Id not found"
+
+
+#post method
+@app.delete('/product')
+def get_product(id: int):
+    for p_index in range(len(products)):
+        if products[p_index].id==id:
+            del products[p_index] #or popout
+            return "deleted successfully"
+    return "Id not found"
