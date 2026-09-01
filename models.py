@@ -3,8 +3,8 @@ from pydantic import BaseModel
 
 class Products(BaseModel):
     id: int 
-    product: str
-    discription: str
+    name: str
+    description: str
     price: float
     quantity: int
 
