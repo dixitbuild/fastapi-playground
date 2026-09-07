@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from models import Products
 from db_config import session, engine
+from sqlalchemy.orm import Session
 import db_models
 
 app = FastAPI()
@@ -33,39 +34,49 @@ init_db()
 def greet():
     return "welcome to Fast API"
 
+def get_db():
+    db = session()
+    try:
+        yield db
+    finally:
+        db.close()
+
 @app.get('/products')
-def get_products():
+def get_products(db: Session = Depends(get_db)):
+    products = db.query(db_models.Product).all()
     return products
 
 #dynamic routing
 @app.get('/product/{id}')
-def get_product(id: int):
-    return products[id-1]
-
-
-#post method
-@app.post('/product')
-def get_product(product: Products):
-    db = session()
-    db.query()
-    products.append(product)
+def get_product(id: int, db: Session = Depends(get_db)):
+    product = db.query(db_models.Product).filter(db_models.Product.id == id).first()
     return product
 
 #post method
-@app.put('/product')
-def update_product(id:int, product: Products):
-    for p_index in range(len(products)):
-        if products[p_index].id==id:
-            products[p_index]=product
-            return "Added successfully"
-    return "Id not found"
+@app.post('/product')
+def create_product(product: Products, db: Session = Depends(get_db)):
+    id = product.id
+    existing_product = db.query(db_models.Product).filter(db_models.Product.id == id).first()
+    if existing_product:
+        return "Product with this ID already exists."
+    db.add(db_models.Product(**product.model_dump()))
+    db.commit()
+    return product
+
+#post method
+@app.put('/product/{id}')
+def update_product(id: int, product: Products, db: Session = Depends(get_db)):
+    db.query(db_models.Product).filter(db_models.Product.id == id).update(product.model_dump())
+    db.commit()
+    return "Product updated successfully"
 
 
 #post method
-@app.delete('/product')
-def get_product(id: int):
-    for p_index in range(len(products)):
-        if products[p_index].id==id:
-            del products[p_index] #or popout
-            return "deleted successfully"
-    return "Id not found"
+@app.delete('/product/{id}')
+def delete_product(id: int, db: Session = Depends(get_db)):
+    product = db.query(db_models.Product).filter(db_models.Product.id == id).first()
+    if product:
+        db.delete(product)
+        db.commit()
+        return "Product deleted successfully"
+    return "Product not found"
